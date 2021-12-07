@@ -25,6 +25,10 @@ func initDir() {
 	}
 }
 
+func initConnect() {
+
+}
+
 func main() {
 
 	parseFlags()
