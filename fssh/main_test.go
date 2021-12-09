@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"log"
+	"runtime"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -43,4 +46,10 @@ func TestConnect(t *testing.T) {
 	//显示文件/目录详情
 	fi, err := sftpClient.Lstat(cwd)
 	log.Println(fi)
+}
+
+func TestInt(t *testing.T) {
+	fmt.Println(runtime.GOARCH)
+	fmt.Println(runtime.GOOS)
+	fmt.Println(strconv.IntSize)
 }
