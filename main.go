@@ -1,5 +1,9 @@
 package fsfc
 
-func main() {
+import "fsfc/server"
 
+func main() {
+	//Logger
+
+	go server.MyServer.Start()
 }

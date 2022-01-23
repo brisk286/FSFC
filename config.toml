@@ -1,0 +1,20 @@
+appName = "fsfc"
+
+[setting]
+# 单位：秒
+scanGap = 6
+
+[log]
+level = "debug"
+path = "logs/chat.log"
+
+[staticPath]
+filePath = "web/static/file/"
+
+
+
+# [msgChannelType]
+# channelType = "gochannel"
+#
+# kafkaHosts = "kafka:9092"
+# kafkaTopic = "go-chat-message"
