@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"fmt"
 	"fsfc/config"
 	"os"
 	"path/filepath"
@@ -13,6 +14,10 @@ type Filesystem struct {
 var fs Filesystem
 
 func init() {
+	fmt.Println("111")
+	fmt.Println(config.GetConfig().Set.RootPath)
+	fmt.Println(config.GetConfig().Set.ScanGap)
+	fmt.Println("222")
 	fs.root = config.GetConfig().Set.RootPath
 }
 

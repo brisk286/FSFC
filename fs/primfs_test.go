@@ -11,11 +11,14 @@ func TestWalk(t *testing.T) {
 
 	fmt.Println("_____", root)
 
-	fs := &Filesystem{root: root}
+	//fs := &Filesystem{root: root}
+	//
+	//files, _ := fs.Walk()
+	Fs := GetFs()
 
-	files, _ := fs.Walk()
+	dirList, _ := Fs.Walk()
 
-	for i, file := range files {
+	for i, file := range dirList {
 		fmt.Println(i, file)
 	}
 }
