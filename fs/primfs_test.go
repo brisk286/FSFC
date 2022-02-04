@@ -11,9 +11,9 @@ func TestWalk(t *testing.T) {
 
 	fmt.Println("_____", root)
 
-	fs := &filesystem{root: root}
+	fs := &Filesystem{root: root}
 
-	files, _ := fs.walk()
+	files, _ := fs.Walk()
 
 	for i, file := range files {
 		fmt.Println(i, file)

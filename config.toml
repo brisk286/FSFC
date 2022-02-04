@@ -3,6 +3,7 @@ appName = "fsfc"
 [setting]
 # 单位：秒
 scanGap = 6
+rootPath = '.'
 
 [log]
 level = "debug"

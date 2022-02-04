@@ -1,7 +1,8 @@
-package main
+package ffile
+
+import "flag"
 
 import (
-	"flag"
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
