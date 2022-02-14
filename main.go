@@ -21,8 +21,7 @@ func main() {
 	//设置路由
 	newRouter := router.NewRouter()
 
-	go server.MyServer.Start()
-
+	//在本地开一个端口  接收信息
 	s := &http.Server{
 		Addr:           ":8888",
 		Handler:        newRouter,
@@ -34,4 +33,7 @@ func main() {
 	if nil != err {
 		logger.Logger.Error("server error", logger.Any("serverError", err))
 	}
+
+	//开启后端
+	go server.MyServer.Start()
 }

@@ -8,23 +8,33 @@ import (
 type TomlConfig struct {
 	AppName    string
 	Set        Setting
+	Web        WebConfig
 	Log        LogConfig
 	StaticPath PathConfig
 }
 
-// 基础设置
+// Setting 基础设置
 type Setting struct {
-	ScanGap  string
-	RootPath string
+	ScanGap    int
+	LocalPath  string
+	remotePath string
 }
 
-// 日志保存地址
+// WebConfig 网络设置
+type WebConfig struct {
+	LocalIp    string
+	LocalPort  string
+	RemoteIp   string
+	RemotePort string
+}
+
+// LogConfig 日志保存地址
 type LogConfig struct {
 	Path  string
 	Level string
 }
 
-// 相关地址信息，例如静态文件地址
+// PathConfig 相关地址信息，例如静态文件地址
 type PathConfig struct {
 	FilePath string
 }
@@ -47,7 +57,7 @@ func init() {
 	if err != nil {
 		return
 	}
-	fmt.Println(c)
+	//fmt.Println(c)
 }
 
 func GetConfig() TomlConfig {

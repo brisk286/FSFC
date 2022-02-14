@@ -14,7 +14,7 @@ func GetFiles(c *gin.Context) {
 
 	dirList, err := Fs.Walk()
 	if err != nil {
-		logger.Logger.Error("rootWrong", logger.Any("rootPath", config.GetConfig().Set.RootPath))
+		logger.Logger.Error("rootWrong", logger.Any("LocalPath", config.GetConfig().Set.LocalPath))
 		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
 	}
 	c.JSON(http.StatusOK, response.SuccessMsg(dirList))
