@@ -17,7 +17,7 @@ type TomlConfig struct {
 type Setting struct {
 	ScanGap    int
 	LocalPath  string
-	remotePath string
+	RemotePath string
 }
 
 // WebConfig 网络设置

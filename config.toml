@@ -8,7 +8,8 @@ scanGap = 6
 # 用户去自己想要的文件夹  输入绝对地址
 # 注意转义字符
 localPath = "D:\\go\\src\\fsfc\\fs"
-remotePath = "home/syncDir"
+# todo：linux注意
+remotePath = "home\\syncDir"
 
 [web]
 localIp = "127.0.0.1"

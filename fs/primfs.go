@@ -59,13 +59,14 @@ func (f *Filesystem) GetChangedFile() []string {
 	var changedFiles []string
 
 	fileInfos := primfs.Scan()
+	remotePath := config.GetConfig().Set.RemotePath
 
 	scanGap := config.GetConfig().Set.ScanGap
 	lastScanTime := time.Now().Add(time.Duration(-scanGap) * time.Second)
 
 	for _, info := range fileInfos {
-		if info.ModTime().After(lastScanTime) && !info.IsDir() {
-			changedFiles = append(changedFiles, info.Name())
+		if info.ModTime().After(lastScanTime) && !info.IsDir() { //只会传文件，不传文件夹
+			changedFiles = append(changedFiles, remotePath+"\\"+info.relaPath)
 		}
 	}
 
@@ -76,22 +77,25 @@ func GetFs() Filesystem {
 	return primfs
 }
 
-// AbsToRela 如果找不到，传空
+// AbsToRela 如果找不到，可能是lastDir，传文件名
 func AbsToRela(absPath string) string {
 	var RelaPath string
 
 	lastDir := "\\" + GetLastDir(config.GetConfig().Set.LocalPath) + "\\"
-	//fmt.Println(lastDir)
-	//fmt.Println(strings.Index(absPath, lastDir))
 
 	if strings.Index(absPath, lastDir) != -1 {
 		RelaPath = absPath[strings.Index(absPath, lastDir)+1:]
+	} else {
+		seqList := strings.Split(absPath, "\\")
+		RelaPath = seqList[len(seqList)-1]
 	}
 	return RelaPath
 }
 
 func GetLastDir(path string) string {
 	seqList := strings.Split(path, "\\")
+
 	lastDir := seqList[len(seqList)-1]
+
 	return lastDir
 }
