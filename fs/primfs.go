@@ -55,6 +55,7 @@ func (f *Filesystem) Scan() []FilePrimInfo {
 	return fileInfos
 }
 
+// GetChangedFile 传的是绝对地址
 func (f *Filesystem) GetChangedFile() []string {
 	var changedFiles []string
 
