@@ -13,9 +13,11 @@ import (
 	"net/http"
 )
 
-func postChangedFile() {
+func PostChangedFile() {
 	primfs := fs.GetFs()
 	changedFiles := primfs.GetChangedFile()
+
+	fmt.Println(changedFiles)
 
 	changedFilesJson, _ := json.Marshal(changedFiles)
 
@@ -49,14 +51,14 @@ func postChangedFile() {
 		rsyncOps := rsync.CalculateDifferences(modified, blockHashes.BlockHashes)
 
 		rsyncOpsReq := request.RsyncOpsReq{filename, rsyncOps, len(modified)}
-		postRsyncOps(rsyncOpsReq)
+		PostRsyncOps(rsyncOpsReq)
 	}
 
 	defer resp.Body.Close()
 
 }
 
-func postRsyncOps(rsyncOpsReq request.RsyncOpsReq) {
+func PostRsyncOps(rsyncOpsReq request.RsyncOpsReq) {
 	rsyncOpsJson, _ := json.Marshal(rsyncOpsReq)
 
 	remoteIp := config.GetConfig().Web.RemoteIp

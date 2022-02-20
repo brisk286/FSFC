@@ -95,7 +95,6 @@ func AbsToRela(absPath string) string {
 
 func GetLastDir(path string) string {
 	seqList := strings.Split(path, "\\")
-
 	lastDir := seqList[len(seqList)-1]
 
 	return lastDir

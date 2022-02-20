@@ -19,20 +19,16 @@ func NewRouter() *gin.Engine {
 	server.Use(Cors())
 	server.Use(Recovery)
 
-	//socket := RunSocekt
-
 	group := server.Group("")
 	{
 		group.GET("/getFiles", apis.GetFiles)
 		group.GET("/getTest", apis.GetTest)
-		//group.GET("/user/:uuid", v1.GetUserDetails)
-		//group.POST("/user/register", v1.Register)
 
 	}
 	return server
 }
 
-//跨域设置中间件
+// Cors 跨域设置中间件
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//http请求类型
@@ -52,7 +48,6 @@ func Cors() gin.HandlerFunc {
 			c.JSON(http.StatusOK, "ok!")
 		}
 
-		//异常处理
 		defer func() {
 			if err := recover(); err != nil {
 				logger.Logger.Error("HttpError", zap.Any("HttpError", err))
@@ -63,7 +58,7 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
-//异常处理中间件
+// Recovery 异常处理中间件
 func Recovery(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {

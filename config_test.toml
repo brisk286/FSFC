@@ -1,0 +1,25 @@
+appName = "fsfc"
+
+[set]
+# 单位：秒
+scanGap = 20
+# 默认 fsfc/
+# 实际情况下肯定是一个绝对地址
+# 用户去自己想要的文件夹  输入绝对地址
+# 注意转义字符
+localPath = "C:\\Users\\14595\\Desktop\\重要资料"
+# todo：linux注意
+remotePath = "C:\\Users\\14595\\Desktop\\储存"
+
+[web]
+localIp = "127.0.0.1"
+localPort = "8888"
+remoteIp = "127.0.0.1"
+remotePort = "5555"
+
+[log]
+level = "debug"
+path = "logs/chat.log"
+
+[staticPath]
+filePath = "web/static/file/"

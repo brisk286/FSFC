@@ -43,11 +43,12 @@ var c TomlConfig
 
 func init() {
 	// 设置文件名
-	viper.SetConfigName("config")
+	//viper.SetConfigName("config")
+	viper.SetConfigName("config_test")
 	// 设置文件类型
 	viper.SetConfigType("toml")
 	// 设置文件路径，在工作目录中查找配置
-	viper.AddConfigPath("../")
+	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %s", err))
