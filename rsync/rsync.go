@@ -26,22 +26,22 @@ type FileBlockHashes struct {
 // BlockHash hash块结构
 type BlockHash struct {
 	//哈希块下标
-	index int
+	Index int
 	//强哈希值
-	strongHash []byte
+	StrongHash []byte
 	//弱哈希值
-	weakHash uint32
+	WeakHash uint32
 }
 
 // RSyncOp An rsync operation (typically to be sent across the network). It can be either a block of raw data or a block index.
 //rsync数据体
 type RSyncOp struct {
 	//操作类型
-	opCode int
+	OpCode int `json:"opCode"`
 	//如果是DATA 那么保存数据
-	data []byte
+	Data []byte `json:"data"`
 	//如果是BLOCK 保存块下标
-	blockIndex int
+	BlockIndex int `json:"blockIndex"`
 }
 
 // Returns the smaller of a or b.
@@ -67,7 +67,7 @@ func weakHash(v []byte) (uint32, uint32, uint32) {
 //从hash块队列中遍历每个块的强hash值  一一比对
 func searchStrongHash(l []BlockHash, hashValue []byte) (bool, *BlockHash) {
 	for _, blockHash := range l {
-		if string(blockHash.strongHash) == string(hashValue) {
+		if string(blockHash.StrongHash) == string(hashValue) {
 			return true, &blockHash
 		}
 	}
@@ -91,7 +91,7 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 
 	//遍历每个哈希块数组
 	for _, h := range hashes {
-		key := h.weakHash
+		key := h.WeakHash
 		//用弱hash做key，值为哈希块
 		//数组+链表！！todo：Test
 		hashesMap[key] = append(hashesMap[key], h)
@@ -130,11 +130,11 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 				//如果是DATA
 				if dirty {
 					//将一个数组操作体放入操作管道中
-					rsyncOps = append(rsyncOps, RSyncOp{opCode: DATA, data: content[previousMatch:offset]})
+					rsyncOps = append(rsyncOps, RSyncOp{OpCode: DATA, Data: content[previousMatch:offset]})
 					dirty = false
 				}
 				//将一个数组操作体放入操作管道中
-				rsyncOps = append(rsyncOps, RSyncOp{opCode: BLOCK, blockIndex: blockHash.index})
+				rsyncOps = append(rsyncOps, RSyncOp{OpCode: BLOCK, BlockIndex: blockHash.Index})
 				previousMatch = endingByte
 				// 找到了就不用rolling
 				isRolling = false
@@ -150,7 +150,7 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 
 	//如果最后一个块不对应,那么把所有DATA放入
 	if dirty {
-		rsyncOps = append(rsyncOps, RSyncOp{opCode: DATA, data: content[previousMatch:]})
+		rsyncOps = append(rsyncOps, RSyncOp{OpCode: DATA, Data: content[previousMatch:]})
 	}
 
 	return rsyncOps

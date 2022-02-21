@@ -99,3 +99,8 @@ func GetLastDir(path string) string {
 
 	return lastDir
 }
+
+func FixDir(localPath string) string {
+	lastDir := GetLastDir(localPath)
+	return localPath[:len(localPath)-len(lastDir)]
+}

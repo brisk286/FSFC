@@ -2,7 +2,7 @@ appName = "fsfc"
 
 [set]
 # 单位：秒
-scanGap = 20
+scanGap = 10
 # 默认 fsfc/
 # 实际情况下肯定是一个绝对地址
 # 用户去自己想要的文件夹  输入绝对地址

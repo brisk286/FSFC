@@ -38,17 +38,27 @@ func PostChangedFile() {
 		return
 	}
 
+	fmt.Println(blockHashesReps)
+
 	fileBlockHashes := blockHashesReps.Data
 
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
 		relaPath := fs.AbsToRela(filename)
-		localPath := config.GetConfig().Set.LocalPath
+		localPath := config.GetConfig().Set.RemotePath
+		localPath = fs.FixDir(localPath)
+		fmt.Println(localPath)
 		absPath := localPath + "\\" + relaPath
 
-		modified, _ := ioutil.ReadFile(absPath)
+		modified, err := ioutil.ReadFile(absPath)
+		if err != nil {
+			panic("读取本地文件失败")
+		}
+		fmt.Println("成功找到本地文件:", modified)
 
 		rsyncOps := rsync.CalculateDifferences(modified, blockHashes.BlockHashes)
+		fmt.Println(rsyncOps)
+		fmt.Println("对比差异完成")
 
 		rsyncOpsReq := request.RsyncOpsReq{filename, rsyncOps, len(modified)}
 		PostRsyncOps(rsyncOpsReq)
