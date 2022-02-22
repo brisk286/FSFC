@@ -15,6 +15,14 @@ func SuccessMsg(data interface{}) *ResponseMsg {
 	return msg
 }
 
+func SuccessCodeMsg() *ResponseMsg {
+	msg := &ResponseMsg{
+		Code: 0,
+		Msg:  "SUCCESS",
+	}
+	return msg
+}
+
 func FailMsg(msg string) *ResponseMsg {
 	msgObj := &ResponseMsg{
 		Code: -1,

@@ -11,13 +11,18 @@ import (
 	"fsfc/rsync"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func PostChangedFile() {
 	primfs := fs.GetFs()
 	changedFiles := primfs.GetChangedFile()
 
-	fmt.Println(changedFiles)
+	if changedFiles == nil {
+		fmt.Println(time.Now(), "未检测到文件修改")
+		return
+	}
+	fmt.Println(time.Now(), "检测到修改的文件：", changedFiles)
 
 	changedFilesJson, _ := json.Marshal(changedFiles)
 
@@ -31,24 +36,19 @@ func PostChangedFile() {
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
-
-	blockHashesReps := &response.BlockHashesReps{}
+	blockHashesReps := response.BlockHashesReps{}
 	err = json.Unmarshal(body, &blockHashesReps)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	fmt.Println(blockHashesReps)
-
 	fileBlockHashes := blockHashesReps.Data
-
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
 		relaPath := fs.AbsToRela(filename)
-		fmt.Println(relaPath)
 		localPath := config.GetConfig().Set.RemotePath
 		localPath = fs.FixDir(localPath)
-		fmt.Println(localPath)
 		absPath := localPath + relaPath
 
 		modified, err := ioutil.ReadFile(absPath)
@@ -56,11 +56,11 @@ func PostChangedFile() {
 			fmt.Println(absPath)
 			panic("读取本地文件失败")
 		}
-		fmt.Println("成功找到本地文件:")
+		fmt.Println("成功找到本地文件:", absPath)
 
 		rsyncOps := rsync.CalculateDifferences(modified, blockHashes.BlockHashes)
 		//fmt.Println(rsyncOps)
-		fmt.Println("对比差异完成")
+		fmt.Println("对比差异完成, 发送RsyncOps")
 
 		rsyncOpsReq := request.RsyncOpsReq{filename, rsyncOps, len(modified)}
 		PostRsyncOps(rsyncOpsReq)
@@ -80,6 +80,19 @@ func PostRsyncOps(rsyncOpsReq request.RsyncOpsReq) {
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	successCodeMsg := response.ResponseMsg{}
+	err = json.Unmarshal(body, &successCodeMsg)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if successCodeMsg.Msg == "SUCCESS" {
+		fmt.Println("文件同步成功")
 	}
 
 	defer resp.Body.Close()
