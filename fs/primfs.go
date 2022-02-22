@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -60,18 +61,20 @@ func (f *Filesystem) GetChangedFile() []string {
 	var changedFiles []string
 
 	fileInfos := primfs.Scan()
-	remotePath := config.GetConfig().Set.RemotePath
 
 	scanGap := config.GetConfig().Set.ScanGap
 	lastScanTime := time.Now().Add(time.Duration(-scanGap) * time.Second)
 
 	for _, info := range fileInfos {
-		if info.ModTime().After(lastScanTime) && !info.IsDir() { //只会传文件，不传文件夹
-			changedFiles = append(changedFiles, remotePath+"\\"+info.relaPath)
+		infoWin32 := info.Sys().(*syscall.Win32FileAttributeData)
+		createTime := NanoToFileTime(infoWin32.CreationTime.Nanoseconds() / 1e9)
+
+		if (info.ModTime().After(lastScanTime) || createTime.After(lastScanTime)) && !info.IsDir() { //只会传文件，不传文件夹
+			changedFiles = append(changedFiles, info.relaPath)
 		}
 	}
 
-	return changedFiles
+	return RelaToAbsRemotePath(changedFiles)
 }
 
 func GetFs() Filesystem {
@@ -103,4 +106,18 @@ func GetLastDir(path string) string {
 func FixDir(localPath string) string {
 	lastDir := GetLastDir(localPath)
 	return localPath[:len(localPath)-len(lastDir)]
+}
+
+func RelaToAbsRemotePath(filenames []string) []string {
+	remotePath := config.GetConfig().Set.RemotePath
+
+	for i := 0; i < len(filenames); i++ {
+		filenames[i] = remotePath + "\\" + filenames[i]
+	}
+
+	return filenames
+}
+
+func NanoToFileTime(sec int64) time.Time {
+	return time.Unix(sec, 0)
 }
