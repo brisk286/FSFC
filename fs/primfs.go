@@ -68,8 +68,9 @@ func (f *Filesystem) GetChangedFile() []string {
 	for _, info := range fileInfos {
 		infoWin32 := info.Sys().(*syscall.Win32FileAttributeData)
 		createTime := NanoToFileTime(infoWin32.CreationTime.Nanoseconds() / 1e9)
+		lastAccessTime := NanoToFileTime(infoWin32.LastAccessTime.Nanoseconds() / 1e9)
 
-		if (info.ModTime().After(lastScanTime) || createTime.After(lastScanTime)) && !info.IsDir() { //只会传文件，不传文件夹
+		if (info.ModTime().After(lastScanTime) || createTime.After(lastScanTime)) || lastAccessTime.After(lastScanTime) && !info.IsDir() { //只会传文件，不传文件夹
 			changedFiles = append(changedFiles, info.relaPath)
 		}
 	}

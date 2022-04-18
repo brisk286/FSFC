@@ -23,6 +23,7 @@ func NewServer() *Server {
 }
 
 func (s *Server) Start() {
+	//定时任务
 	scanGap := config.GetConfig().Set.ScanGap
 	timeTickerChan := time.Tick(time.Second * time.Duration(scanGap))
 

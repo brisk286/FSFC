@@ -18,7 +18,7 @@ var (
 	Float32 = zap.Float32
 )
 
-// logpath 日志文件路径
+// InitLogger logpath 日志文件路径
 // loglevel 日志级别
 // 配置zap库
 func InitLogger(logpath string, loglevel string) {

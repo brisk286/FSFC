@@ -1,4 +1,4 @@
-package apis
+package v1
 
 import (
 	"fsfc/config"

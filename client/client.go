@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// PostChangedFile 扫描修改的文件夹
 func PostChangedFile() {
 	primfs := fs.GetFs()
 	changedFiles := primfs.GetChangedFile()
@@ -29,9 +30,13 @@ func PostChangedFile() {
 	remoteIp := config.GetConfig().Web.RemoteIp
 	remotePort := config.GetConfig().Web.RemotePort
 
-	resp, err := http.Post("http://"+remoteIp+":"+remotePort+"/changedFile", "application/json", bytes.NewBuffer(changedFilesJson))
+	resp, err := http.Post("http://"+remoteIp+":"+remotePort+"/v1/changedFile",
+		"application/json", bytes.NewBuffer(changedFilesJson))
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println("changedFiles发送失败，请检查网络连接，及存储端后台是否开启")
+		fmt.Println("本次结果将存储到缓存中，将在通信成功后再次发送")
+
 		return
 	}
 
@@ -47,8 +52,7 @@ func PostChangedFile() {
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
 		relaPath := fs.AbsToRela(filename)
-		localPath := config.GetConfig().Set.RemotePath
-		localPath = fs.FixDir(localPath)
+		localPath := fs.FixDir(config.GetConfig().Set.RemotePath)
 		absPath := localPath + relaPath
 
 		modified, err := ioutil.ReadFile(absPath)
@@ -62,7 +66,12 @@ func PostChangedFile() {
 		//fmt.Println(rsyncOps)
 		fmt.Println("对比差异完成, 发送RsyncOps")
 
-		rsyncOpsReq := request.RsyncOpsReq{filename, rsyncOps, len(modified)}
+		rsyncOpsReq := request.RsyncOpsReq{
+			Filename:       filename,
+			RsyncOps:       rsyncOps,
+			ModifiedLength: len(modified),
+		}
+
 		PostRsyncOps(rsyncOpsReq)
 	}
 
@@ -76,7 +85,7 @@ func PostRsyncOps(rsyncOpsReq request.RsyncOpsReq) {
 	remoteIp := config.GetConfig().Web.RemoteIp
 	remotePort := config.GetConfig().Web.RemotePort
 
-	resp, err := http.Post("http://"+remoteIp+":"+remotePort+"/rebuildFile", "application/json", bytes.NewBuffer(rsyncOpsJson))
+	resp, err := http.Post("http://"+remoteIp+":"+remotePort+"/v1/rebuildFile", "application/json", bytes.NewBuffer(rsyncOpsJson))
 	if err != nil {
 		fmt.Println(err)
 		return

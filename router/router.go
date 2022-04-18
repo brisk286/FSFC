@@ -1,7 +1,7 @@
 package router
 
 import (
-	"fsfc/apis"
+	"fsfc/apis/v1"
 	"fsfc/logger"
 	"fsfc/response"
 
@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	_ "fsfc/docs"
 )
 
 func NewRouter() *gin.Engine {
@@ -19,11 +21,11 @@ func NewRouter() *gin.Engine {
 	server.Use(Cors())
 	server.Use(Recovery)
 
-	group := server.Group("")
+	group := server.Group("/v1")
 	{
-		group.GET("/getFiles", apis.GetFiles)
-		group.GET("/getTest", apis.GetTest)
-
+		group.GET("/getFiles", v1.GetFiles)
+		group.GET("/getTest", v1.GetTest)
+		group.GET("/getLastSyncTime", v1.GetLastSyncTime)
 	}
 	return server
 }

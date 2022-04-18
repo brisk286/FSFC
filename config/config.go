@@ -39,15 +39,18 @@ type PathConfig struct {
 	FilePath string
 }
 
-var c TomlConfig
+var c *TomlConfig
 
 func init() {
+	// 指定配置文件路径
+	viper.SetConfigFile("./config_test.yaml")
 	// 设置文件名
 	//viper.SetConfigName("config")
 	viper.SetConfigName("config_test")
 	// 设置文件类型
 	viper.SetConfigType("toml")
 	// 设置文件路径，在工作目录中查找配置
+	viper.AddConfigPath("../../")
 	viper.AddConfigPath("../")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
@@ -59,9 +62,8 @@ func init() {
 	if err != nil {
 		return
 	}
-	//fmt.Println(c)
 }
 
-func GetConfig() TomlConfig {
+func GetConfig() *TomlConfig {
 	return c
 }
