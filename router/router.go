@@ -9,8 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-
-	_ "fsfc/docs"
 )
 
 func NewRouter() *gin.Engine {
@@ -26,6 +24,7 @@ func NewRouter() *gin.Engine {
 		group.GET("/getFiles", v1.GetFiles)
 		group.GET("/getTest", v1.GetTest)
 		group.GET("/getLastSyncTime", v1.GetLastSyncTime)
+		group.GET("/getSyncGap", v1.GetSyncGap)
 	}
 	return server
 }

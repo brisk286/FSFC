@@ -7,15 +7,15 @@ scanGap = 6
 # 实际情况下肯定是一个绝对地址
 # 用户去自己想要的文件夹  输入绝对地址
 # 注意转义字符
-localPath = "D:\\go\\src\\fsfc\\fs"
+localPath = "C:\\Users\\14595\\Desktop\\fsfc_windows"
 # todo：linux注意
-remotePath = "home\\syncDir"
+remotePath = "/go/project/syncDir"
 
 [web]
 localIp = "127.0.0.1"
 localPort = "8888"
 remoteIp = "152.136.187.78"
-remotePort = "8888"
+remotePort = "5555"
 
 [log]
 level = "debug"

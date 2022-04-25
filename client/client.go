@@ -20,7 +20,7 @@ func PostChangedFile() {
 	changedFiles := primfs.GetChangedFile()
 
 	if changedFiles == nil {
-		fmt.Println(time.Now(), "未检测到文件修改")
+		//fmt.Println(time.Now(), "未检测到文件修改")
 		return
 	}
 	fmt.Println(time.Now(), "检测到修改的文件：", changedFiles)
@@ -52,7 +52,8 @@ func PostChangedFile() {
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
 		relaPath := fs.AbsToRela(filename)
-		localPath := fs.FixDir(config.GetConfig().Set.RemotePath)
+		//localPath := fs.FixDir(config.GetConfig().Set.RemotePath)
+		localPath := fs.FixDir(config.GetConfig().Set.LocalPath)
 		absPath := localPath + relaPath
 
 		modified, err := ioutil.ReadFile(absPath)

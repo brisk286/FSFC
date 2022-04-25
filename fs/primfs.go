@@ -1,7 +1,9 @@
 package fs
 
 import (
+	"fmt"
 	"fsfc/config"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,9 +50,14 @@ func (f *Filesystem) Scan() []FilePrimInfo {
 		panic(err)
 	}
 
+	stats, _ := ioutil.ReadDir(f.root)
+
 	for _, file := range files {
-		stat, _ := os.Stat(file)
-		fileInfos = append(fileInfos, FilePrimInfo{AbsToRela(file), stat})
+		for _, stat := range stats {
+			if strings.Split(file, "\\")[len(strings.Split(file, "\\"))-1] == stat.Name() {
+				fileInfos = append(fileInfos, FilePrimInfo{AbsToRela(file), stat})
+			}
+		}
 	}
 
 	return fileInfos
@@ -66,12 +73,15 @@ func (f *Filesystem) GetChangedFile() []string {
 	lastScanTime := time.Now().Add(time.Duration(-scanGap) * time.Second)
 
 	for _, info := range fileInfos {
-		infoWin32 := info.Sys().(*syscall.Win32FileAttributeData)
+		infoWin32 := info.FileInfo.Sys().(*syscall.Win32FileAttributeData)
 		createTime := NanoToFileTime(infoWin32.CreationTime.Nanoseconds() / 1e9)
 		lastAccessTime := NanoToFileTime(infoWin32.LastAccessTime.Nanoseconds() / 1e9)
 
-		if (info.ModTime().After(lastScanTime) || createTime.After(lastScanTime)) || lastAccessTime.After(lastScanTime) && !info.IsDir() { //只会传文件，不传文件夹
-			changedFiles = append(changedFiles, info.relaPath)
+		if info.FileInfo.ModTime().After(lastScanTime) || createTime.After(lastScanTime) || lastAccessTime.After(lastScanTime) { //只会传文件，不传文件夹
+			if !info.FileInfo.IsDir() {
+				changedFiles = append(changedFiles, info.relaPath)
+				fmt.Println(lastAccessTime)
+			}
 		}
 	}
 
@@ -94,6 +104,7 @@ func AbsToRela(absPath string) string {
 		seqList := strings.Split(absPath, "\\")
 		RelaPath = seqList[len(seqList)-1]
 	}
+	RelaPath = strings.ReplaceAll(RelaPath, "\\", "/")
 	return RelaPath
 }
 
@@ -113,7 +124,7 @@ func RelaToAbsRemotePath(filenames []string) []string {
 	remotePath := config.GetConfig().Set.RemotePath
 
 	for i := 0; i < len(filenames); i++ {
-		filenames[i] = remotePath + "\\" + filenames[i]
+		filenames[i] = remotePath + "/" + filenames[i]
 	}
 
 	return filenames

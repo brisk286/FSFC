@@ -2,6 +2,7 @@ package fs
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"syscall"
 	"testing"
@@ -103,4 +104,27 @@ func Test_CreateFile(t *testing.T) {
 
 func timespecToTime(sec int64) time.Time {
 	return time.Unix(sec, 0)
+}
+
+func Test_LastAccessTime(t *testing.T) {
+	//fileInfos := primfs.Scan()
+	path := "C:\\Users\\14595\\Desktop\\重要资料"
+
+	fileInfos, _ := ioutil.ReadDir(path)
+
+	for _, info := range fileInfos {
+		infoWin32 := info.Sys().(*syscall.Win32FileAttributeData)
+		createTime := NanoToFileTime(infoWin32.CreationTime.Nanoseconds() / 1e9)
+		lastAccessTime := NanoToFileTime(infoWin32.LastAccessTime.Nanoseconds() / 1e9)
+		_ = info.Name()
+		_ = lastAccessTime.After(createTime)
+		fmt.Println(lastAccessTime)
+	}
+	//fmt.Println("_________")
+	//
+	//fileInfosS := primfs.Scan()
+	//
+	//for _, infoS := range fileInfosS {
+	//	fmt.Println(infoS.FileInfo.Name())
+	//}
 }

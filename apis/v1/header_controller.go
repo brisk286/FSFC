@@ -1,7 +1,8 @@
 package v1
 
 import (
-	"fsfc/db"
+	"fsfc/config"
+	DB "fsfc/db"
 	"fsfc/models"
 	"fsfc/response"
 	"fsfc_store/logger"
@@ -9,9 +10,8 @@ import (
 	"net/http"
 )
 
-// GetLastSyncTime
 func GetLastSyncTime(c *gin.Context) {
-	db := db.GetDB()
+	db := DB.GetDB()
 
 	sqlStr := "select RsyncFile_Id, RsyncFile_Filename, RsyncFile_RsyncTime from rsyncfile order by RsyncFile_RsyncTime desc limit 1"
 	var r models.RsyncFile
@@ -23,4 +23,13 @@ func GetLastSyncTime(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SuccessMsg(r.RsyncFileRsyncTime))
+}
+
+func GetSyncGap(c *gin.Context) {
+	scanGap := config.GetConfig().Set.ScanGap
+	c.JSON(http.StatusOK, response.SuccessMsg(scanGap))
+}
+
+func GetStoreMemory(c *gin.Context) {
+
 }
