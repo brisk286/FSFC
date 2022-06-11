@@ -1,0 +1,16 @@
+syntax = "proto3";
+package protocol;
+option go_package = "./";
+
+
+message RsyncOpsReq {
+    string Filename = 1;
+    repeated RSyncOp RsyncOps = 2;
+    int32 ModifiedLength = 3;
+}
+
+message RSyncOp {
+    int32 OpCode = 1;
+    bytes Data = 2;
+    int32 BlockIndex = 3;
+}

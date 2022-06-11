@@ -4,7 +4,7 @@ import (
 	"fsfc/config"
 	"fsfc/fs"
 	"fsfc/logger"
-	"fsfc/response"
+	"fsfc/pkg/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

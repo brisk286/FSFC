@@ -4,7 +4,6 @@ import (
 	"fsfc/config"
 	"fsfc/logger"
 	"fsfc/router"
-	"fsfc/server"
 	"net/http"
 	"time"
 )
@@ -14,7 +13,7 @@ func main() {
 
 	newRouter := router.NewRouter()
 
-	go server.MyServer.Start()
+	go router.MyServer.Start()
 
 	s := &http.Server{
 		Addr:           ":8888",

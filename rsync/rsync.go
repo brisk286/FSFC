@@ -1,6 +1,8 @@
 package rsync
 
-import "crypto/md5"
+import (
+	"crypto/md5"
+)
 
 //常量
 const (
@@ -37,11 +39,11 @@ type BlockHash struct {
 //rsync数据体
 type RSyncOp struct {
 	//操作类型
-	OpCode int `json:"opCode"`
+	OpCode int32 `json:"opCode"`
 	//如果是DATA 那么保存数据
 	Data []byte `json:"data"`
 	//如果是BLOCK 保存块下标
-	BlockIndex int `json:"blockIndex"`
+	BlockIndex int32 `json:"blockIndex"`
 }
 
 // Returns the smaller of a or b.
@@ -134,7 +136,7 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 					dirty = false
 				}
 				//将一个数组操作体放入操作管道中
-				rsyncOps = append(rsyncOps, RSyncOp{OpCode: BLOCK, BlockIndex: blockHash.Index})
+				rsyncOps = append(rsyncOps, RSyncOp{OpCode: BLOCK, BlockIndex: int32(blockHash.Index)})
 				previousMatch = endingByte
 				// 找到了就不用rolling
 				isRolling = false

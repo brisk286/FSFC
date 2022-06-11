@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"fsfc/models"
+	"fsfc/pkg/models"
 	"testing"
 	"time"
 )

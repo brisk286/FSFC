@@ -1,11 +1,11 @@
-package client
+package router
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"fsfc/config"
-	"fsfc/response"
+	"fsfc/pkg/response"
 	"io/ioutil"
 	"net/http"
 	"testing"

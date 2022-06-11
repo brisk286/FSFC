@@ -55,7 +55,7 @@ func (f *Filesystem) Scan() []FilePrimInfo {
 	for _, file := range files {
 		for _, stat := range stats {
 			if strings.Split(file, "\\")[len(strings.Split(file, "\\"))-1] == stat.Name() {
-				fileInfos = append(fileInfos, FilePrimInfo{AbsToRela(file), stat})
+				fileInfos = append(fileInfos, FilePrimInfo{strings.ReplaceAll(AbsToRela(file), "\\", "/"), stat})
 			}
 		}
 	}
@@ -104,7 +104,6 @@ func AbsToRela(absPath string) string {
 		seqList := strings.Split(absPath, "\\")
 		RelaPath = seqList[len(seqList)-1]
 	}
-	RelaPath = strings.ReplaceAll(RelaPath, "\\", "/")
 	return RelaPath
 }
 

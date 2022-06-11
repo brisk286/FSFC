@@ -3,8 +3,8 @@ package v1
 import (
 	"fsfc/config"
 	DB "fsfc/db"
-	"fsfc/models"
-	"fsfc/response"
+	"fsfc/pkg/models"
+	"fsfc/pkg/response"
 	"fsfc_store/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"

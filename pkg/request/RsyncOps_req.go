@@ -5,5 +5,5 @@ import "fsfc/rsync"
 type RsyncOpsReq struct {
 	Filename       string          `json:"filename"`
 	RsyncOps       []rsync.RSyncOp `json:"rsyncOps"`
-	ModifiedLength int             `json:"ModifiedLength"`
+	ModifiedLength int32           `json:"ModifiedLength"`
 }

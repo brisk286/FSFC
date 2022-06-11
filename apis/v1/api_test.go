@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"fsfc/config"
 	"fsfc/fs"
-	"fsfc/response"
+	"fsfc/pkg/response"
 	"io/ioutil"
 	"net/http"
 	"testing"

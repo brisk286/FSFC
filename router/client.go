@@ -1,4 +1,4 @@
-package client
+package router
 
 import (
 	"bytes"
@@ -6,13 +6,71 @@ import (
 	"fmt"
 	"fsfc/config"
 	"fsfc/fs"
-	"fsfc/request"
-	"fsfc/response"
+	"fsfc/pkg/request"
+	"fsfc/pkg/response"
+	"fsfc/rpc/codec"
+	"fsfc/rpc/compressor"
+	"fsfc/rpc/serializer"
 	"fsfc/rsync"
+	"io"
+	"net/rpc"
+
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
+
+// Client rpc client based on net/rpc implementation
+type Client struct {
+	*rpc.Client
+}
+
+//Option provides options for rpc
+type Option func(o *options)
+
+type options struct {
+	compressType compressor.CompressType
+	serializer   serializer.Serializer
+}
+
+// WithCompress set client compression format
+func WithCompress(c compressor.CompressType) Option {
+	return func(o *options) {
+		o.compressType = c
+	}
+}
+
+// WithSerializer set client serializer
+func WithSerializer(serializer serializer.Serializer) Option {
+	return func(o *options) {
+		o.serializer = serializer
+	}
+}
+
+// NewClient Create a new rpc client
+func NewClient(conn io.ReadWriteCloser, opts ...Option) *Client {
+	options := options{
+		compressType: compressor.Raw,
+		serializer:   serializer.Proto,
+	}
+	for _, option := range opts {
+		option(&options)
+	}
+	return &Client{rpc.NewClientWithCodec(
+		codec.NewClientCodec(conn, options.compressType, options.serializer))}
+}
+
+// Call synchronously calls the rpc function
+// 同步call
+func (c *Client) Call(serviceMethod string, args interface{}, reply interface{}) error {
+	return c.Client.Call(serviceMethod, args, reply)
+}
+
+// AsyncCall asynchronously calls the rpc function and returns a channel of *rpc.Call
+func (c *Client) AsyncCall(serviceMethod string, args interface{}, reply interface{}) chan *rpc.Call {
+	return c.Go(serviceMethod, args, reply, nil).Done
+}
 
 // PostChangedFile 扫描修改的文件夹
 func PostChangedFile() {
@@ -51,9 +109,11 @@ func PostChangedFile() {
 	fileBlockHashes := blockHashesReps.Data
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
-		relaPath := fs.AbsToRela(filename)
+		relaPath := fs.AbsToRela(strings.ReplaceAll(filename, "/", "\\"))
 		//localPath := fs.FixDir(config.GetConfig().Set.RemotePath)
 		localPath := fs.FixDir(config.GetConfig().Set.LocalPath)
+		fmt.Println("relaPath:" + relaPath)
+		fmt.Println("localPath:" + localPath)
 		absPath := localPath + relaPath
 
 		modified, err := ioutil.ReadFile(absPath)
@@ -70,9 +130,35 @@ func PostChangedFile() {
 		rsyncOpsReq := request.RsyncOpsReq{
 			Filename:       filename,
 			RsyncOps:       rsyncOps,
-			ModifiedLength: len(modified),
+			ModifiedLength: int32(len(modified)),
 		}
 
+		//var rsyncOpsProto []*protocol.RSyncOp
+		//for _, each := range rsyncOps {
+		//	rsyncOpsProto = append(rsyncOpsProto, &protocol.RSyncOp{
+		//		OpCode:     each.OpCode,
+		//		Data:       each.Data,
+		//		BlockIndex: each.BlockIndex,
+		//	})
+		//}
+
+		//bytesProto, _ := proto.Marshal(&protocol.RsyncOpsReq{
+		//	Filename:       filename,
+		//	RsyncOps:       rsyncOpsProto,
+		//	ModifiedLength: int32(len(modified)),
+		//})
+		//
+		//var Receive protocol.RsyncOpsReq
+
+		//todo: 将byte保存到redis
+		//fmt.Println("bytes:", bytesProto)
+		//protobuf解码
+		//err = proto.Unmarshal(bytesProto, &Receive)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//fmt.Println("Receive:", &Receive)
+		//fmt.Println("rsyncOpsReq:", rsyncOpsReq)
 		PostRsyncOps(rsyncOpsReq)
 	}
 
