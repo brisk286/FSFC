@@ -10,11 +10,11 @@ import (
 )
 
 func GetFiles(c *gin.Context) {
-	Fs := fs.GetFs()
+	Fs := fs.PrimFs
 
 	dirList, err := Fs.Walk()
 	if err != nil {
-		logger.Logger.Error("rootWrong", logger.Any("LocalPath", config.GetConfig().Set.LocalPath))
+		logger.Logger.Error("rootWrong", logger.Any("LocalPath", config.Config.Set.LocalPath))
 		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
 	}
 	c.JSON(http.StatusOK, response.SuccessMsg(dirList))

@@ -47,19 +47,20 @@ func NewClientCodec(conn io.ReadWriteCloser,
 // WriteRequest Write the rpc request header and body to the io stream
 func (c *clientCodec) WriteRequest(r *rpc.Request, param interface{}) error {
 	c.mutex.Lock()
+	//序列号 map 调用方法：确保线程安全
 	c.pending[r.Seq] = r.ServiceMethod
 	c.mutex.Unlock()
 
+	// 用 序列化器 对 参数 进行编码：这里是pb编码
+	reqBody, err := c.serializer.Marshal(param)
 	// 判断压缩器是否存在
 	if _, ok := compressor.Compressors[c.compressor]; !ok {
 		return NotFoundCompressorError
 	}
-	// 用序列化器进行编码
-	reqBody, err := c.serializer.Marshal(param)
 	if err != nil {
 		return err
 	}
-	// 压缩
+	// 用压缩器压缩 编码
 	compressedReqBody, err := compressor.Compressors[c.compressor].Zip(reqBody)
 	if err != nil {
 		return err
@@ -67,24 +68,29 @@ func (c *clientCodec) WriteRequest(r *rpc.Request, param interface{}) error {
 	// 从请求头部对象池取出请求头
 	h := header.RequestPool.Get().(*header.RequestHeader)
 	defer func() {
+		//初始化
 		h.ResetHeader()
+		//放回池中
 		header.RequestPool.Put(h)
 	}()
 	h.ID = r.Seq
 	h.Method = r.ServiceMethod
+	//请求长度等于编码长度
 	h.RequestLen = uint32(len(compressedReqBody))
 	h.CompressType = header.CompressType(c.compressor)
+	//传入字节流计算校验和
 	h.Checksum = crc32.ChecksumIEEE(compressedReqBody)
 
-	// 发送请求头
+	// 发送请求头 参数（写入流，请求头编码后的字节流
 	if err := sendFrame(c.w, h.Marshal()); err != nil {
 		return err
 	}
-	// 发送请求体
+	// 发送请求体 参数（写入流，请求体编码后的字节流
 	if err := write(c.w, compressedReqBody); err != nil {
 		return err
 	}
 
+	//刷新缓冲区
 	c.w.(*bufio.Writer).Flush()
 	return nil
 }
@@ -128,7 +134,7 @@ func (c *clientCodec) ReadResponseBody(param interface{}) error {
 		return nil
 	}
 
-	// 根据响应体长度，读取该长度的字节串
+	// 根据响应体长度，从io流中读取该长度的响应体字节串
 	respBody := make([]byte, c.response.ResponseLen)
 	err := read(c.r, respBody)
 	if err != nil {

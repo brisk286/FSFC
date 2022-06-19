@@ -12,13 +12,15 @@ import (
 )
 
 type Filesystem struct {
-	root string
+	root    string
+	ScanGap int
 }
 
-var primfs Filesystem
+var PrimFs Filesystem
 
 func init() {
-	primfs.root = config.GetConfig().Set.LocalPath
+	PrimFs.root = config.Config.Set.LocalPath
+	PrimFs.ScanGap = config.Config.Set.ScanGap
 }
 
 // Walk 扫描root下的所有文件，包括root
@@ -67,9 +69,9 @@ func (f *Filesystem) Scan() []FilePrimInfo {
 func (f *Filesystem) GetChangedFile() []string {
 	var changedFiles []string
 
-	fileInfos := primfs.Scan()
+	fileInfos := PrimFs.Scan()
 
-	scanGap := config.GetConfig().Set.ScanGap
+	scanGap := config.Config.Set.ScanGap
 	lastScanTime := time.Now().Add(time.Duration(-scanGap) * time.Second)
 
 	for _, info := range fileInfos {
@@ -88,15 +90,11 @@ func (f *Filesystem) GetChangedFile() []string {
 	return RelaToAbsRemotePath(changedFiles)
 }
 
-func GetFs() Filesystem {
-	return primfs
-}
-
 // AbsToRela 如果找不到，可能是lastDir，传文件名
 func AbsToRela(absPath string) string {
 	var RelaPath string
 
-	lastDir := "\\" + GetLastDir(config.GetConfig().Set.LocalPath) + "\\"
+	lastDir := "\\" + GetLastDir(config.Config.Set.LocalPath) + "\\"
 
 	if strings.Index(absPath, lastDir) != -1 {
 		RelaPath = absPath[strings.Index(absPath, lastDir)+1:]
@@ -107,6 +105,11 @@ func AbsToRela(absPath string) string {
 	return RelaPath
 }
 
+func FixDir(localPath string) string {
+	lastDir := GetLastDir(localPath)
+	return localPath[:len(localPath)-len(lastDir)]
+}
+
 func GetLastDir(path string) string {
 	seqList := strings.Split(path, "\\")
 	lastDir := seqList[len(seqList)-1]
@@ -114,13 +117,8 @@ func GetLastDir(path string) string {
 	return lastDir
 }
 
-func FixDir(localPath string) string {
-	lastDir := GetLastDir(localPath)
-	return localPath[:len(localPath)-len(lastDir)]
-}
-
 func RelaToAbsRemotePath(filenames []string) []string {
-	remotePath := config.GetConfig().Set.RemotePath
+	remotePath := config.Config.Set.RemotePath
 
 	for i := 0; i < len(filenames); i++ {
 		filenames[i] = remotePath + "/" + filenames[i]

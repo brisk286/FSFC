@@ -2,6 +2,7 @@ package fs
 
 import (
 	"fmt"
+	"fsfc/rsync"
 	"io/ioutil"
 	"os"
 	"syscall"
@@ -17,7 +18,7 @@ func Test_Walk(t *testing.T) {
 	//primfs := &Filesystem{root: root}
 	//
 	//files, _ := primfs.Walk()
-	Fs := GetFs()
+	Fs := PrimFs
 
 	dirList, _ := Fs.Walk()
 
@@ -59,7 +60,7 @@ func Test_Name(t *testing.T) {
 }
 
 func Test_Scan(t *testing.T) {
-	fileInfos := primfs.Scan()
+	fileInfos := PrimFs.Scan()
 
 	for _, info := range fileInfos {
 		fmt.Println(info.Name())
@@ -70,7 +71,7 @@ func Test_Scan(t *testing.T) {
 }
 
 func Test_ChangedFile(t *testing.T) {
-	fileInfos := primfs.GetChangedFile()
+	fileInfos := PrimFs.GetChangedFile()
 
 	for _, info := range fileInfos {
 		fmt.Println(info)
@@ -80,7 +81,7 @@ func Test_ChangedFile(t *testing.T) {
 func Test_AtR(t *testing.T) {
 	filePath := "D:\\go\\src\\fsfc\\fs\\primfs.go"
 
-	fmt.Println(AbsToRela(filePath))
+	fmt.Println(rsync.AbsToRela(filePath))
 }
 
 func Test_CreateFile(t *testing.T) {

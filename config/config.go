@@ -39,7 +39,7 @@ type PathConfig struct {
 	FilePath string
 }
 
-var c *TomlConfig
+var Config *TomlConfig
 
 func init() {
 	// 指定配置文件路径
@@ -59,12 +59,8 @@ func init() {
 		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 
-	err = viper.Unmarshal(&c)
+	err = viper.Unmarshal(&Config)
 	if err != nil {
 		return
 	}
-}
-
-func GetConfig() *TomlConfig {
-	return c
 }

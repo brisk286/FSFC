@@ -26,7 +26,7 @@ func GetLastSyncTime(c *gin.Context) {
 }
 
 func GetSyncGap(c *gin.Context) {
-	scanGap := config.GetConfig().Set.ScanGap
+	scanGap := config.Config.Set.ScanGap
 	c.JSON(http.StatusOK, response.SuccessMsg(scanGap))
 }
 

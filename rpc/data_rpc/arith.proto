@@ -1,0 +1,53 @@
+// Copyright 2022 <mzh.scnu@qq.com>. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package message;
+option go_package="/protocol";
+
+// RsyncService Defining Computational Digital Services
+service RsyncService {
+//    Rpc1Request :
+  //    参数： []文件名
+  //    返回值：[]rsync.FileBlockHashes
+  rpc CalculateBlockHashes(Rpc1Request) returns (Rpc1Response);
+
+  rpc CalculateRSyncOps(Rpc2Request) returns (Rpc2Response);
+}
+
+message Rpc1Request {
+  repeated string Filenames = 1;
+}
+
+message Rpc1Response {
+  repeated FileBlockHash FileBlockHashes = 1;
+}
+
+message Rpc2Request {
+  string Filename = 1;
+  repeated RSyncOpPb RsyncOpPbs = 2;
+  int32 ModifiedLength = 3;
+}
+
+message Rpc2Response {
+  double Filename = 1;
+}
+
+message FileBlockHash {
+  string  Filename = 1;
+  repeated BlockHash BlockHashes = 2;
+}
+
+message BlockHash {
+  int32  Index = 1;
+  bytes StrongHash = 2;
+  uint32 WeakHash = 3;
+}
+
+message RSyncOpPb {
+  int32 OpCode = 1;
+  bytes Data = 2;
+  int32 BlockIndex = 3;
+}

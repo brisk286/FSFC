@@ -1,7 +1,8 @@
-package router
+package main
 
 import (
-	"fsfc/config"
+	"errors"
+	"fmt"
 	"fsfc/fs"
 	"fsfc/rpc/codec"
 	"fsfc/rpc/serializer"
@@ -30,7 +31,7 @@ func NewServer(opts ...Option) *Server {
 		option(&options)
 	}
 
-	return &Server{&sync.Mutex{}, &rpc.Server{}, options.serializer, fs.GetFs()}
+	return &Server{&sync.Mutex{}, &rpc.Server{}, options.serializer, fs.PrimFs}
 
 }
 
@@ -56,15 +57,29 @@ func (s *Server) Serve(lis net.Listener) {
 	}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() error {
+	err := s.TickerScan()
+	if err != nil {
+		return errors.New("server run fail")
+	}
+	return nil
+}
+
+func (s *Server) TickerScan() error {
 	//定时任务
-	scanGap := config.GetConfig().Set.ScanGap
-	timeTickerChan := time.Tick(time.Second * time.Duration(scanGap))
+	timeTickerChan := time.Tick(time.Second * time.Duration(s.fs.ScanGap))
 
 	for {
 		select {
 		case <-timeTickerChan:
-			PostChangedFile()
+			changedFiles := fs.PrimFs.GetChangedFile()
+			if changedFiles == nil {
+				return errors.New("无文件修改")
+			}
+			fmt.Println(time.Now(), "检测到修改的文件：", changedFiles)
+
+			Rsync(changedFiles)
+
 		}
 	}
 }

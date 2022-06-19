@@ -157,3 +157,15 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 
 	return rsyncOps
 }
+
+type RsyncOpsReq struct {
+	Filename       string    `json:"filename"`
+	RsyncOps       []RSyncOp `json:"rsyncOps"`
+	ModifiedLength int32     `json:"ModifiedLength"`
+}
+
+type BlockHashesReps struct {
+	Code int               `json:"code"`
+	Msg  string            `json:"msg"`
+	Data []FileBlockHashes `json:"data"`
+}

@@ -9,11 +9,11 @@ import (
 )
 
 func main() {
-	logger.InitLogger(config.GetConfig().Log.Path, config.GetConfig().Log.Level)
+	logger.InitLogger(config.Config.Log.Path, config.Config.Log.Level)
 
 	newRouter := router.NewRouter()
 
-	go router.MyServer.Start()
+	go MyServer.Start()
 
 	s := &http.Server{
 		Addr:           ":8888",
