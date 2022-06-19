@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"fsfc/config"
-	"fsfc/pkg/response"
+	"fsfc/rsync"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -18,8 +18,8 @@ func Test_Client(t *testing.T) {
 
 	changedFilesJson, _ := json.Marshal(changedFiles)
 
-	remoteIp := config.GetConfig().Web.RemoteIp
-	remotePort := config.GetConfig().Web.RemotePort
+	remoteIp := config.Config.Web.RemoteIp
+	remotePort := config.Config.Web.RemotePort
 
 	resp, err := http.Post("http://"+remoteIp+":"+remotePort+"/changedFile", "application/json", bytes.NewBuffer(changedFilesJson))
 	if err != nil {
@@ -30,7 +30,7 @@ func Test_Client(t *testing.T) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 
-	blockHashesReps := &response.BlockHashesReps{}
+	blockHashesReps := &rsync.BlockHashesReps{}
 	err = json.Unmarshal(body, &blockHashesReps)
 	if err != nil {
 		return
@@ -49,7 +49,7 @@ func Test_ConnectFail(t *testing.T) {
 	changedFilesJson, _ := json.Marshal(changedFiles)
 
 	remoteIp := "152.136.187.78"
-	remotePort := config.GetConfig().Web.RemotePort
+	remotePort := config.Config.Web.RemotePort
 
 	_, err := http.Post("http://"+remoteIp+":"+remotePort+"/changedFile", "application/json", bytes.NewBuffer(changedFilesJson))
 	if err != nil {

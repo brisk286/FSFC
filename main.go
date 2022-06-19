@@ -13,7 +13,7 @@ func main() {
 
 	newRouter := router.NewRouter()
 
-	go MyServer.Start()
+	go router.MyServer.Start()
 
 	s := &http.Server{
 		Addr:           ":8888",

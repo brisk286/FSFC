@@ -1,7 +1,6 @@
-package main
+package router
 
 import (
-	"errors"
 	"fmt"
 	"fsfc/fs"
 	"fsfc/rpc/codec"
@@ -57,15 +56,11 @@ func (s *Server) Serve(lis net.Listener) {
 	}
 }
 
-func (s *Server) Start() error {
-	err := s.TickerScan()
-	if err != nil {
-		return errors.New("server run fail")
-	}
-	return nil
+func (s *Server) Start() {
+	s.TickerScan()
 }
 
-func (s *Server) TickerScan() error {
+func (s *Server) TickerScan() {
 	//定时任务
 	timeTickerChan := time.Tick(time.Second * time.Duration(s.fs.ScanGap))
 
@@ -73,11 +68,11 @@ func (s *Server) TickerScan() error {
 		select {
 		case <-timeTickerChan:
 			changedFiles := fs.PrimFs.GetChangedFile()
-			if changedFiles == nil {
-				return errors.New("无文件修改")
+			if len(changedFiles) == 0 {
+				fmt.Println("无文件修改")
+				continue
 			}
 			fmt.Println(time.Now(), "检测到修改的文件：", changedFiles)
-
 			Rsync(changedFiles)
 
 		}

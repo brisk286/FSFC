@@ -42,9 +42,6 @@ type PathConfig struct {
 var Config *TomlConfig
 
 func init() {
-	// 指定配置文件路径
-	//viper.SetConfigFile("./config_test.yaml")
-	viper.SetConfigFile("./config.yaml")
 	// 设置文件名
 	viper.SetConfigName("config")
 	//viper.SetConfigName("config_test")

@@ -86,7 +86,6 @@ func (f *Filesystem) GetChangedFile() []string {
 			}
 		}
 	}
-
 	return RelaToAbsRemotePath(changedFiles)
 }
 
