@@ -72,7 +72,7 @@ func (c *Client) AsyncCall(serviceMethod string, args interface{}, reply interfa
 func Rsync(changedFiles []string) {
 	//conn, err := net.Dial("tcp", ":8008")
 	//conn, err := net.Dial("tcp", config.Config.Web.RemoteIp+":"+config.Config.Web.RemotePort)
-	conn, err := net.Dial("tcp", ":8008")
+	conn, err := net.Dial("tcp", "152.136.187.78:8008")
 	if err != nil {
 		log.Fatal(err)
 	}

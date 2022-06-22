@@ -31,22 +31,36 @@ func Test_Kv(t *testing.T) {
 
 func Test_List(t *testing.T) {
 	//新增
-	_ = rdb.RPush(ctx, "list", "message").Err()
-	_ = rdb.RPush(ctx, "list", "message2").Err()
+	//_ = rdb.RPush(ctx, "list", "message").Err()
+	//_ = rdb.RPush(ctx, "list", "message2").Err()
 
 	//查询
-	result, _ := rdb.LLen(ctx, "list").Result()
-	fmt.Println(result)
+	//result, _ := rdb.LLen(ctx, "list").Result()
+	//fmt.Println(result)
+	l := rdb.LLen(ctx, "list")
+	fmt.Println(l)
 
 	//更新
-	_ = rdb.LSet(ctx, "list", 2, "message set").Err()
+	//_ = rdb.LSet(ctx, "list", 2, "message set").Err()
+
+	//result, _ = rdb.LLen(ctx, "list").Result()
+	//fmt.Println(result)
 
 	//遍历
-	lRange, _ := rdb.LRange(ctx, "list", 0, result).Result()
-	for _, v := range lRange {
-		log.Println(v)
-	}
+	//lRange, _ := rdb.LRange(ctx, "list", 0, result).Result()
+	//for _, v := range lRange {
+	//	log.Println(v)
+	//}
+	//
+	////删除
+	//_, _ = rdb.LRem(ctx, "list", 3, "message2").Result()
+}
 
-	//删除
-	_, _ = rdb.LRem(ctx, "list", 3, "message2").Result()
+func Test_li(t *testing.T) {
+	// 返回从0开始到-1位置之间的数据，意思就是返回全部数据
+	vals, err := rdb.LRange(ctx, "list", 0, -1).Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(vals)
 }
