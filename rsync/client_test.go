@@ -1,11 +1,10 @@
-package router
+package rsync
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"fsfc/config"
-	"fsfc/rsync"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -30,7 +29,7 @@ func Test_Client(t *testing.T) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 
-	blockHashesReps := &rsync.BlockHashesReps{}
+	blockHashesReps := &BlockHashesReps{}
 	err = json.Unmarshal(body, &blockHashesReps)
 	if err != nil {
 		return
@@ -68,8 +67,8 @@ func Test_ConnectFail(t *testing.T) {
 //发送错误字段
 //无反馈
 
-//断网:
-//Post "http://152.136.187.78:5555/changedFile": EOF
+// 断网:
+// Post "http://152.136.187.78:5555/changedFile": EOF
 func Test_1(t *testing.T) {
 	fmt.Println("1")
 }

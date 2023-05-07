@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// GetLastSyncTime 获取上一次同步时间
 func GetLastSyncTime(c *gin.Context) {
 	db := DB.GetDB()
 
@@ -25,6 +26,7 @@ func GetLastSyncTime(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SuccessMsg(r.RsyncFileRsyncTime))
 }
 
+// GetSyncGap 获取同步间隔
 func GetSyncGap(c *gin.Context) {
 	scanGap := config.Config.Set.ScanGap
 	c.JSON(http.StatusOK, response.SuccessMsg(scanGap))

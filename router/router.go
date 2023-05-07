@@ -15,6 +15,7 @@ func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	server := gin.Default()
+
 	//添加全局中间件
 	server.Use(Cors())
 	server.Use(Recovery)

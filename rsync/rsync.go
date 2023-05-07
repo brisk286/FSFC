@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 )
 
-//常量
+// 常量
 const (
 	// BLOCK 整块数据
 	BLOCK = iota
@@ -36,7 +36,7 @@ type BlockHash struct {
 }
 
 // RSyncOp An rsync operation (typically to be sent across the network). It can be either a block of raw data or a block index.
-//rsync数据体
+// rsync数据体
 type RSyncOp struct {
 	//操作类型
 	OpCode int32 `json:"opCode"`
@@ -44,6 +44,18 @@ type RSyncOp struct {
 	Data []byte `json:"data"`
 	//如果是BLOCK 保存块下标
 	BlockIndex int32 `json:"blockIndex"`
+}
+
+type RsyncOpsReq struct {
+	Filename       string    `json:"filename"`
+	RsyncOps       []RSyncOp `json:"rsyncOps"`
+	ModifiedLength int32     `json:"ModifiedLength"`
+}
+
+type BlockHashesReps struct {
+	Code int               `json:"code"`
+	Msg  string            `json:"msg"`
+	Data []FileBlockHashes `json:"data"`
 }
 
 // Returns the smaller of a or b.
@@ -55,7 +67,7 @@ func min(a, b int) int {
 }
 
 // Returns a weak hash for a given block of data.
-//弱hash
+// 弱hash
 func weakHash(v []byte) (uint32, uint32, uint32) {
 	var a, b uint32
 	for i := range v {
@@ -66,7 +78,7 @@ func weakHash(v []byte) (uint32, uint32, uint32) {
 }
 
 // Searches for a given strong hash among all strong hashes in this bucket.
-//从hash块队列中遍历每个块的强hash值  一一比对
+// 从hash块队列中遍历每个块的强hash值  一一比对
 func searchStrongHash(l []BlockHash, hashValue []byte) (bool, *BlockHash) {
 	for _, blockHash := range l {
 		if string(blockHash.StrongHash) == string(hashValue) {
@@ -156,16 +168,4 @@ func CalculateDifferences(content []byte, hashes []BlockHash) []RSyncOp {
 	}
 
 	return rsyncOps
-}
-
-type RsyncOpsReq struct {
-	Filename       string    `json:"filename"`
-	RsyncOps       []RSyncOp `json:"rsyncOps"`
-	ModifiedLength int32     `json:"ModifiedLength"`
-}
-
-type BlockHashesReps struct {
-	Code int               `json:"code"`
-	Msg  string            `json:"msg"`
-	Data []FileBlockHashes `json:"data"`
 }

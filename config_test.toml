@@ -8,7 +8,7 @@ scanGap = 10
 # 用户去自己想要的文件夹  输入绝对地址
 # 注意转义字符
 localPath = "C:\\Users\\14595\\Desktop\\重要资料"
-# todo：linux注意格式   存储端应该默认自己所安装的目录，remotePath则设置在同级目录下
+# linux注意格式   存储端应该默认自己所安装的目录，remotePath则设置在同级目录下
 remotePath = "C:\\Users\\14595\\Desktop\\储存"
 
 [web]

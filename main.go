@@ -11,10 +11,11 @@ import (
 func main() {
 	logger.InitLogger(config.Config.Log.Path, config.Config.Log.Level)
 
-	newRouter := router.NewRouter()
-
+	// 启动一个协程检测文件修改情况
 	go router.MyServer.Start()
 
+	// 启动server路由
+	newRouter := router.NewRouter()
 	s := &http.Server{
 		Addr:           ":8888",
 		Handler:        newRouter,

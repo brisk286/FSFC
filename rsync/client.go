@@ -1,19 +1,18 @@
-package router
+package rsync
 
 import (
 	"fmt"
-	"fsfc/config"
+	"fsfc/fs"
 	"fsfc/rpc/codec"
 	"fsfc/rpc/compressor"
 	"fsfc/rpc/data_rpc/protocol"
 	"fsfc/rpc/serializer"
-	"fsfc/rsync"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/rpc"
-	"strings"
+	"time"
 )
 
 // Client rpc client based on net/rpc implementation
@@ -21,40 +20,40 @@ type Client struct {
 	*rpc.Client
 }
 
-//Option provides options for rpc
-type Option func(o *options)
+// Option provides options for rpc
+type Option func(o *Options)
 
-type options struct {
+type Options struct {
 	compressType compressor.CompressType
-	serializer   serializer.Serializer
+	Serializer   serializer.Serializer
 }
 
 // WithCompress set client compression format
 func WithCompress(c compressor.CompressType) Option {
-	return func(o *options) {
+	return func(o *Options) {
 		o.compressType = c
 	}
 }
 
 // WithSerializer set client serializer
 func WithSerializer(serializer serializer.Serializer) Option {
-	return func(o *options) {
-		o.serializer = serializer
+	return func(o *Options) {
+		o.Serializer = serializer
 	}
 }
 
 // NewClient Create a new rpc client
 func NewClient(conn io.ReadWriteCloser, opts ...Option) *Client {
-	options := options{
+	options := Options{
 		compressType: compressor.Raw,
-		serializer:   serializer.Proto,
+		Serializer:   serializer.Proto,
 	}
 	for _, option := range opts {
 		option(&options)
 	}
 	return &Client{
 		rpc.NewClientWithCodec(
-			codec.NewClientCodec(conn, options.compressType, options.serializer)),
+			codec.NewClientCodec(conn, options.compressType, options.Serializer)),
 	}
 }
 
@@ -69,27 +68,43 @@ func (c *Client) AsyncCall(serviceMethod string, args interface{}, reply interfa
 	return c.Go(serviceMethod, args, reply, nil).Done
 }
 
-func Rsync(changedFiles []string) {
+func Rsync(changedFileInfos []fs.FilePrimInfo) {
 	//conn, err := net.Dial("tcp", ":8008")
 	//conn, err := net.Dial("tcp", config.Config.Web.RemoteIp+":"+config.Config.Web.RemotePort)
-	conn, err := net.Dial("tcp", "152.136.187.78:8008")
+	conn, err := net.Dial("tcp", "124.70.57.7:8008")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
+
 	client := NewClient(conn)
 	defer client.Close()
+
+	var changedFiles []string
+	for _, fileInfo := range changedFileInfos {
+		changedFiles = append(changedFiles, fileInfo.RelaPath)
+	}
 
 	fileBlockHashes := client.Rpc1(changedFiles)
 
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
-		relaPath := AbsToRela(strings.ReplaceAll(filename, "/", "\\"))
-		//localPath := FixDir(config.GetConfig().Set.RemotePath)
-		localPath := FixDir(config.Config.Set.LocalPath)
-		fmt.Println("relaPath:" + relaPath)
-		fmt.Println("localPath:" + localPath)
-		absPath := localPath + relaPath
+
+		//relaPath := fs.AbsToRela(strings.ReplaceAll(filename, "/", "\\"))
+		////localPath := FixDir(config.GetConfig().Set.RemotePath)
+		//localPath := fs.FixDir(config.Config.Set.LocalPath)
+		//fmt.Println("relaPath:" + relaPath)
+		//fmt.Println("localPath:" + localPath)
+		//absPath := localPath + relaPath
+
+		var absPath string
+
+		for _, fileInfo := range changedFileInfos {
+			if filename == fileInfo.RelaPath {
+				absPath = fileInfo.AbsPath
+				break
+			}
+		}
 
 		modified, err := ioutil.ReadFile(absPath)
 		if err != nil {
@@ -98,20 +113,20 @@ func Rsync(changedFiles []string) {
 		}
 		fmt.Println("成功找到本地文件:", absPath)
 
-		var hashRsync []rsync.BlockHash
+		var hashRsync []BlockHash
 		for _, hash := range blockHashes.BlockHashes {
-			hashRsync = append(hashRsync, rsync.BlockHash{
+			hashRsync = append(hashRsync, BlockHash{
 				Index:      int(hash.Index),
 				StrongHash: hash.StrongHash,
 				WeakHash:   hash.WeakHash,
 			})
 		}
 
-		rsyncOps := rsync.CalculateDifferences(modified, hashRsync)
+		rsyncOps := CalculateDifferences(modified, hashRsync)
 		//fmt.Println(rsyncOps)
 		fmt.Println("对比差异完成, 发送RsyncOps")
 
-		rsyncOpsReq := rsync.RsyncOpsReq{
+		rsyncOpsReq := RsyncOpsReq{
 			Filename:       filename,
 			RsyncOps:       rsyncOps,
 			ModifiedLength: int32(len(modified)),
@@ -126,6 +141,7 @@ func Rsync(changedFiles []string) {
 }
 
 // Rpc1 store计算hash list 并发送回来
+// 参数：linux下的绝对路径
 func (c *Client) Rpc1(changedFiles []string) []*protocol.FileBlockHash {
 	cases := struct {
 		client         *Client
@@ -136,17 +152,20 @@ func (c *Client) Rpc1(changedFiles []string) []*protocol.FileBlockHash {
 		serviceMenthod: "RsyncService.CalculateBlockHashes",
 		arg:            &protocol.Rpc1Request{Filenames: changedFiles},
 	}
+
 	reply := &protocol.Rpc1Response{}
-	fmt.Printf("调用store端方法：%v", cases.serviceMenthod)
+
+	fmt.Printf("调用store端方法：%v\n", cases.serviceMenthod)
+
 	err := c.Call(cases.serviceMenthod, cases.arg, reply)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return reply.FileBlockHashes
 }
 
-func (c *Client) Rpc2(rsyncOpsReq rsync.RsyncOpsReq) error {
+func (c *Client) Rpc2(rsyncOpsReq RsyncOpsReq) error {
 	var rsyncOpPbs []*protocol.RSyncOpPb
 	for _, op := range rsyncOpsReq.RsyncOps {
 		rsyncOpPbs = append(rsyncOpPbs, &protocol.RSyncOpPb{
@@ -169,8 +188,8 @@ func (c *Client) Rpc2(rsyncOpsReq rsync.RsyncOpsReq) error {
 			ModifiedLength: rsyncOpsReq.ModifiedLength,
 		},
 	}
-	reply := &protocol.Rpc1Response{}
-	fmt.Printf("调用store端方法：%v", cases.serviceMenthod)
+	reply := &protocol.Rpc2Response{}
+	fmt.Printf("调用store端方法：%v\n", cases.serviceMenthod)
 	err := c.Call(cases.serviceMenthod, cases.arg, reply)
 	if err != nil {
 		log.Fatal(err)
@@ -179,29 +198,11 @@ func (c *Client) Rpc2(rsyncOpsReq rsync.RsyncOpsReq) error {
 	return nil
 }
 
-// AbsToRela 如果找不到，可能是lastDir，传文件名
-func AbsToRela(absPath string) string {
-	var RelaPath string
-
-	lastDir := "\\" + GetLastDir(config.Config.Set.LocalPath) + "\\"
-
-	if strings.Index(absPath, lastDir) != -1 {
-		RelaPath = absPath[strings.Index(absPath, lastDir)+1:]
+func FileSync(fileInfos []fs.FilePrimInfo) {
+	if len(fileInfos) == 0 {
+		fmt.Println("无文件修改")
 	} else {
-		seqList := strings.Split(absPath, "\\")
-		RelaPath = seqList[len(seqList)-1]
+		fmt.Println(time.Now(), "检测文件修改")
+		Rsync(fileInfos)
 	}
-	return RelaPath
-}
-
-func FixDir(localPath string) string {
-	lastDir := GetLastDir(localPath)
-	return localPath[:len(localPath)-len(lastDir)]
-}
-
-func GetLastDir(path string) string {
-	seqList := strings.Split(path, "\\")
-	lastDir := seqList[len(seqList)-1]
-
-	return lastDir
 }

@@ -15,17 +15,23 @@ type TomlConfig struct {
 
 // Setting 基础设置
 type Setting struct {
-	ScanGap    int
-	LocalPath  string
-	RemotePath string
+	ScanGap         int
+	ScanMlGapUpdate int
+	ScanMlGapSync   int
+	MlTopK          int
+	LocalPath       string
+	RemotePath      string
+	RecentPath      string
 }
 
 // WebConfig 网络设置
 type WebConfig struct {
-	LocalIp    string
-	LocalPort  string
-	RemoteIp   string
-	RemotePort string
+	LocalIp      string
+	LocalPort    string
+	RemoteIp     string
+	RemotePort   string
+	RemoteMlIp   string
+	RemoteMlPort string
 }
 
 // LogConfig 日志保存地址
