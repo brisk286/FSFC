@@ -14,8 +14,8 @@ const (
 
 const (
 	// BlockSize 默认块大小
-	//BlockSize = 1024 * 644
-	BlockSize = 2
+	BlockSize = 1024 * 644
+	//BlockSize = 2
 	// M 65536 弱哈希算法取模
 	M = 1 << 16
 )

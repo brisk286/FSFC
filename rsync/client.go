@@ -90,13 +90,6 @@ func Rsync(changedFileInfos []fs.FilePrimInfo) {
 	for _, blockHashes := range fileBlockHashes {
 		filename := blockHashes.Filename
 
-		//relaPath := fs.AbsToRela(strings.ReplaceAll(filename, "/", "\\"))
-		////localPath := FixDir(config.GetConfig().Set.RemotePath)
-		//localPath := fs.FixDir(config.Config.Set.LocalPath)
-		//fmt.Println("relaPath:" + relaPath)
-		//fmt.Println("localPath:" + localPath)
-		//absPath := localPath + relaPath
-
 		var absPath string
 
 		for _, fileInfo := range changedFileInfos {
@@ -202,7 +195,7 @@ func FileSync(fileInfos []fs.FilePrimInfo) {
 	if len(fileInfos) == 0 {
 		fmt.Println("无文件修改")
 	} else {
-		fmt.Println(time.Now(), "检测文件修改")
+		fmt.Println(time.Now(), "检测到文件修改")
 		Rsync(fileInfos)
 	}
 }

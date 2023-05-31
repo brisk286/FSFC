@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"fsfc/config"
+	"fsfc/pkg"
 	lnk "github.com/parsiya/golnk"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"io"
@@ -25,7 +26,7 @@ type Filesystem struct {
 	ScanMlGapUpdate int
 	ScanMlGapSync   int
 	MlTopK          int
-	LocalPath       string
+	LocalPath       []string
 	RemotePath      string
 	RecentPath      string
 
@@ -43,12 +44,36 @@ func init() {
 	PrimFs.ScanMlGapUpdate = config.Config.Set.ScanMlGapUpdate
 	PrimFs.ScanMlGapSync = config.Config.Set.ScanMlGapSync
 	PrimFs.MlTopK = config.Config.Set.MlTopK
-	PrimFs.LocalPath = config.Config.Set.LocalPath
+	//PrimFs.LocalPath = config.Config.Set.LocalPath
 	PrimFs.RemotePath = config.Config.Set.RemotePath
 	PrimFs.RecentPath = config.Config.Set.RecentPath
 
 	PrimFs.FileMlHash = map[string]*FileMlInfo{}
 	PrimFs.FileList = []*FileMlInfo{}
+
+	// 初始化存储端同步文件夹信息
+	url := "http://" + config.Config.Web.RemoteIp + ":" + config.Config.Web.RemotePort + "/v1/getAllSaveSpace"
+	res, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+	}
+	defer res.Body.Close()
+
+	content, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+	}
+
+	var allSaveSpaceResp pkg.AllSaveSpaceResp
+	err = json.Unmarshal(content, &allSaveSpaceResp)
+	if err != nil {
+		fmt.Println(err)
+	}
+	PrimFs.LocalPath = allSaveSpaceResp.Data.Dirs
+	if allSaveSpaceResp.Msg == "FAIL" {
+		panic("请求Redis失败，请重试")
+	}
+	fmt.Println("请求Redis成功，已获取同步文件夹地址")
 }
 
 // Walk 扫描LocalPath及下面的所有文件，包括文件夹
@@ -56,11 +81,13 @@ func init() {
 func (f *Filesystem) Walk() ([]string, error) {
 	var files []string
 
-	if err := filepath.Walk(f.LocalPath, func(path string, info os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	}); err != nil {
-		panic(err)
+	for _, localPath := range f.LocalPath {
+		if err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+			files = append(files, path)
+			return nil
+		}); err != nil {
+			panic(err)
+		}
 	}
 
 	return files, nil
@@ -101,7 +128,7 @@ func (f *Filesystem) Scan() []FilePrimInfo {
 		stat, _ := os.Stat(file)
 		if strings.Split(file, "\\")[len(strings.Split(file, "\\"))-1] == stat.Name() && !stat.IsDir() {
 			// 将绝对路径转换为相对路径
-			fileInfos = append(fileInfos, FilePrimInfo{file, strings.ReplaceAll(AbsToRela(file), "\\", "/"), stat})
+			fileInfos = append(fileInfos, FilePrimInfo{file, strings.ReplaceAll(f.AbsToRela(file), "\\", "/"), stat})
 		}
 	}
 
@@ -179,7 +206,7 @@ func (f *Filesystem) UpdateFileInfo() {
 func (f *Filesystem) addList(absPath string, info fs.FileInfo) {
 	fileMlInfo := &FileMlInfo{
 		absPath:    absPath,
-		relaPath:   RelaToMlAbsRemotePath(strings.ReplaceAll(AbsToRela(absPath), "\\", "/")),
+		relaPath:   RelaToMlAbsRemotePath(strings.ReplaceAll(GetLastFile(absPath), "\\", "/")),
 		modTime:    info.ModTime(),
 		accessTime: GetFileAccessTime(info),
 		createTime: GetFileCreateTime(info),
@@ -407,27 +434,35 @@ func (f *Filesystem) GetMlChangedFile() []FilePrimInfo {
 	return changedMlFile
 }
 
-// AbsToRela 如果找不到，可能是lastDir，传文件名
-func AbsToRela(absPath string) string {
+// AbsToRela
+//
+//	exp: D:\go\src\fsfc_store -> src\fsfc_store\
+//	     D:\go\src\fsfc_store\123.txt -> src\fsfc_store\123.txt
+func (f *Filesystem) AbsToRela(absPath string) string {
 	var RelaPath string
+	var lastDirs []string
 
-	lastDir := "\\" + GetLastDir(config.Config.Set.LocalPath) + "\\"
-
-	if strings.Index(absPath, lastDir) != -1 {
-		RelaPath = absPath[strings.Index(absPath, lastDir)+1:]
-	} else {
-		seqList := strings.Split(absPath, "\\")
-		RelaPath = seqList[len(seqList)-1]
+	for _, localPath := range f.LocalPath {
+		lastDir := "\\" + GetLastFile(localPath) + "\\"
+		lastDirs = append(lastDirs, lastDir)
 	}
+
+	for _, lastDir := range lastDirs {
+		if strings.Index(absPath, lastDir) != -1 {
+			RelaPath = absPath[strings.Index(absPath, lastDir)+1:]
+			break
+		}
+	}
+
 	return RelaPath
 }
 
-func FixDir(localPath string) string {
-	lastDir := GetLastDir(localPath)
-	return localPath[:len(localPath)-len(lastDir)]
-}
+//func FixDir(localPath string) string {
+//	lastDir := GetLastFile(localPath)
+//	return localPath[:len(localPath)-len(lastDir)]
+//}
 
-func GetLastDir(path string) string {
+func GetLastFile(path string) string {
 	seqList := strings.Split(path, "\\")
 	lastDir := seqList[len(seqList)-1]
 

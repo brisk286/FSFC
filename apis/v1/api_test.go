@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"fsfc/config"
 	"fsfc/fs"
-	"fsfc/pkg/response"
+	"fsfc/pkg"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -39,7 +39,7 @@ func Test_GetLastSyncTime(t *testing.T) {
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	successCodeMsg := response.ResponseMsg{}
+	successCodeMsg := pkg.ResponseMsg{}
 	err = json.Unmarshal(body, &successCodeMsg)
 	if err != nil {
 		fmt.Println(err)

@@ -9,13 +9,13 @@ scanGap = 10
 # scanMlGapUpdate = 60
 scanMlGapUpdate = 12
 # 自动同步间隔时间（默认一天）
-# scanMlGapSync = 86400
-scanMlGapSync = 60
+ scanMlGapSync = 86400
+#scanMlGapSync = 120
 # 自动同步文件数量，不超过150
 MlTopK = 5
 
 # windows下手动指定同步文件夹
-localPath = "C:\\Users\\14595\\Desktop\\FSFC\\fsfc_windows"
+#localPath = "C:\\Users\\14595\\Desktop\\FSFC\\fsfc_windows"
 # linux服务器同步文件夹地址
 remotePath = "/go/project/syncDir"
 # Recent文件夹地址

@@ -87,11 +87,11 @@ func Test_ChangedFile(t *testing.T) {
 	}
 }
 
-func Test_AtR(t *testing.T) {
-	filePath := "D:\\go\\src\\fsfc\\fs\\primfs.go"
-
-	fmt.Println(AbsToRela(filePath))
-}
+//func Test_AtR(t *testing.T) {
+//	filePath := "D:\\go\\src\\fsfc\\fs\\primfs.go"
+//
+//	fmt.Println(AbsToRela(filePath))
+//}
 
 func Test_CreateFile(t *testing.T) {
 	//os.Create("123.exe")
@@ -137,24 +137,24 @@ func Test_LastAccessTime(t *testing.T) {
 	//}
 }
 
-func Test_RecentDir(t *testing.T) {
-	Fs := &Filesystem{LocalPath: "C:\\Users\\14595\\AppData\\Roaming\\Microsoft\\Windows\\Recent"}
-	//Fs := PrimFs
-
-	//dirList, _ := Fs.WalkLocalPath()
-
-	//ioutil.ReadDir(Fs.root)
-
-	stats, _ := ioutil.ReadDir(Fs.LocalPath)
-
-	for _, stat := range stats {
-		fmt.Println(stat.Name())
-	}
-
-	//for i, file := range dirList {
-	//	fmt.Println(i, file)
-	//}
-}
+//func Test_RecentDir(t *testing.T) {
+//	Fs := &Filesystem{LocalPath: "C:\\Users\\14595\\AppData\\Roaming\\Microsoft\\Windows\\Recent"}
+//	//Fs := PrimFs
+//
+//	//dirList, _ := Fs.WalkLocalPath()
+//
+//	//ioutil.ReadDir(Fs.root)
+//
+//	stats, _ := ioutil.ReadDir(Fs.LocalPath)
+//
+//	for _, stat := range stats {
+//		fmt.Println(stat.Name())
+//	}
+//
+//	//for i, file := range dirList {
+//	//	fmt.Println(i, file)
+//	//}
+//}
 
 func Test_Lnk(t *testing.T) {
 	Lnk, err := lnk.File("C:\\Users\\14595\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\p2525983101.jpg.lnk")
@@ -255,4 +255,15 @@ priority:
 	}
 
 	fmt.Println(1)
+}
+
+func Test_de(t *testing.T) {
+	//dir := fmt.Sprintf(".\\%s", string(time.Now().UTC().String()))
+	//fmt.Printf(dir)
+	//os.MkdirAll(dir, 0777)
+	f, err := os.Create("1.txt")
+	defer f.Close()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }

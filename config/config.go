@@ -19,9 +19,9 @@ type Setting struct {
 	ScanMlGapUpdate int
 	ScanMlGapSync   int
 	MlTopK          int
-	LocalPath       string
-	RemotePath      string
-	RecentPath      string
+	//LocalPath       string
+	RemotePath string
+	RecentPath string
 }
 
 // WebConfig 网络设置

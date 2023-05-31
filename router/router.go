@@ -3,8 +3,7 @@ package router
 import (
 	"fsfc/apis/v1"
 	"fsfc/logger"
-	"fsfc/pkg/response"
-
+	"fsfc/pkg"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,9 +22,10 @@ func NewRouter() *gin.Engine {
 	group := server.Group("/v1")
 	{
 		group.GET("/getFiles", v1.GetFiles)
-		group.GET("/getTest", v1.GetTest)
-		group.GET("/getLastSyncTime", v1.GetLastSyncTime)
+		//group.GET("/getTest", v1.GetTest)
+		//group.GET("/getLastSyncTime", v1.GetLastSyncTime)
 		group.GET("/getSyncGap", v1.GetSyncGap)
+		group.POST("/addSaveSpace", v1.AddSaveSpace)
 	}
 	return server
 }
@@ -65,7 +65,7 @@ func Recovery(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Logger.Error("gin catch error: ", logger.Any("gin catch error: ", r))
-			c.JSON(http.StatusOK, response.FailMsg("系统内部错误"))
+			c.JSON(http.StatusOK, pkg.FailMsg("系统内部错误"))
 		}
 	}()
 	c.Next()
